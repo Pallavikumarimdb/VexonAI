@@ -1,18 +1,19 @@
-'use client'
+"use client";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";    
 
 export default function SignIn() {
-  const [emailAddress, setEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log(email+"   "+password)
     const result = await signIn("credentials", {
-      emailAddress,
+      email,
       password,
       redirect: false,
     });
@@ -31,7 +32,7 @@ export default function SignIn() {
         <input
           type="email"
           placeholder="Email"
-          value={emailAddress}
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />

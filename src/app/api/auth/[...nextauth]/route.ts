@@ -6,25 +6,25 @@ import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
-export default NextAuth({
+const authOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as "jwt",
   },
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        emailAddress: { label: "Email", type: "text" },
+        email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.emailAddress || !credentials?.password) {
+        if (!credentials?.email || !credentials?.password) {
           throw new Error("Missing credentials");
         }
 
         const user = await prisma.user.findUnique({
-          where: { emailAddress: credentials.emailAddress },
+          where: { emailAddress: credentials.email },
         });
 
         if (!user) {
@@ -36,30 +36,35 @@ export default NextAuth({
           throw new Error("Invalid password");
         }
 
-        return {
-          ...user,
-          id: user.id.toString(), 
-        };
+        return { ...user, id: user.id.toString() };
       },
     }),
   ],
   callbacks: {
-    async session({ session, token }) {
-      if (session.user) {
-        //@ts-ignore
-        session.user.id = token.id as number;
-      }
-      return session;
-    },
+    //@ts-ignore
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.email = user.emailAddress; // ✅ Ensure email is included
       }
       return token;
     },
+    //@ts-ignore
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.email = token.email as string; // ✅ Ensure session contains email
+      }
+      return session;
+    },
   },
+  
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/signin",
   },
-});
+};
+
+// ✅ Fix: Export named HTTP handlers instead of `export default`
+export const GET = NextAuth(authOptions);
+export const POST = NextAuth(authOptions);

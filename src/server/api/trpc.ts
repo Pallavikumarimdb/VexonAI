@@ -6,10 +6,10 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
-
+import { getServerSession } from "next-auth";
 import { prisma } from "@/server/db";
 
 /**
@@ -25,8 +25,10 @@ import { prisma } from "@/server/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+  const session = await getServerSession();
   return {
     prisma,
+    session,
     ...opts,
   };
 };
@@ -79,6 +81,39 @@ export const createTRPCRouter = t.router;
  * You can remove this if you don't like it, but it can help catch unwanted waterfalls by simulating
  * network latency that would occur in production but not in local development.
  */
+
+const isAuthenticated = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.session || !ctx.session.user) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You must be logged in to access this resource.",
+    });
+  }
+  // console.log("Session User:", ctx.session.user);
+
+  const user = await ctx.prisma.user.findFirst({
+    where: {
+      emailAddress: ctx.session.user.email ?? "",
+    },
+  });
+
+  if (!user) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "User not found.",
+    });
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      user, // Attach user object to ctx
+    },
+  });
+});
+
+
+
 const timingMiddleware = t.middleware(async ({ next, path }) => {
   const start = Date.now();
 
@@ -104,3 +139,4 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+export const protectedProcedure = t.procedure.use(isAuthenticated);
