@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
+import useProject from "@/hooks/use-project"
 import { cn } from "@/lib/utils"
 import { Bot, CreditCard, LayoutDashboard, Plus, Presentation } from "lucide-react"
 import Image from "next/image"
@@ -31,18 +32,11 @@ const items=[
     }
 ]
 
-const projects =[
-    {
-        name:"Project 1",
-    },{
-        name:"Project 2",
-    },{
-        name:"Project 2",
-    }
-]
+
 export default function AppSidebar() {
     const pathname=usePathname();
     const open=useSidebar();
+    const {projects, projectId, setProjectsId} = useProject();
 
     console.log(open)
     return (
@@ -51,7 +45,8 @@ export default function AppSidebar() {
                 <div className="flex items-center gap-2">
                     {/* <Image src="/logo.png" width={40} height={40} alt="logo" /> */}
                     {open.open && (
-                        <h1 className="font-mono italic text-xl font-bold text-primary/80">VexonAI</h1>
+                        // <h1 className="font-mono italic text-xl font-bold text-primary/80">VexonAI</h1>
+                        <Image src="/logo.png" width={70} height={70} className="rounded-md" alt="logo" />
                     )}
                 </div>
             </SidebarHeader>
@@ -92,15 +87,17 @@ export default function AppSidebar() {
 
                     <SidebarGroupContent>
                         <SidebarMenu>
-                        {projects.map((project) => {
+                        {projects?.map((project) => {
                             return (
                                 <SidebarMenuItem key={project.name}>
                                     <SidebarMenuButton asChild>
-                                        <div>
+                                        <div onClick={()=>{
+                                            setProjectsId(project.id)
+                                        }}>
                                             <div className={cn(
                                                 'rounded-sm border size-6 flex item-center justify-center text-md bg-white text-primary',
                                                 {
-                                                    'bg-primary text-white': true,
+                                                    'bg-primary text-white': project.id === projectId,
                                                 }
                                             )}>
                                                 {project.name[0]}
