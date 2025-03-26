@@ -7,7 +7,7 @@ export const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
 });
 
-const githubUrl = "https://github.com/Pallavikumarimdb/invocraft";
+// const githubUrl = "https://github.com/Pallavikumarimdb/invocraft";
 
 type Response = {
     commitHash: string;
@@ -28,7 +28,7 @@ export const getCommitHashes = async (githubUrl: string): Promise<Response[]> =>
       repo,
   });
   const sortedCommits = data.sort((a: any, b: any) => new Date(b.commit.author.date).getTime() - new Date(a.commit.author.date).getTime()) as any[];
-  return sortedCommits.slice(0, 15).map((commit: any) => ({
+  return sortedCommits.slice(0, 10).map((commit: any) => ({
           commitHash: commit.sha as string,
           commitMessage: commit.commit.message ?? "",
           commitAuthorName: commit.commit?.author?.name ?? "",
@@ -46,8 +46,11 @@ export const pollCommits = async (projectId: string) => {
         return summarizeCommit(githubUrl, commit.commitHash);
     }));
 
+    console.log("summaryResponses", summaryResponses)
+
     const summaries = summaryResponses.map((response) => {
         if(response.status === "fulfilled") {
+            console.log("summaries", response.value)
             return response.value as string;
         }
         return ""
@@ -55,7 +58,6 @@ export const pollCommits = async (projectId: string) => {
 
     const commit = await prisma.commit.createMany({
         data: summaries.map((summary, index) => {
-            console.log("hhshshshs"+ unprocessedCommits[index])
             return {
                 projectId: projectId,
                 commitHash: unprocessedCommits[index]!.commitHash,
@@ -114,6 +116,3 @@ async function filterUnprocessedCommits(projectId: string, commitHashes: Respons
     return unprocessedCommits;
 }
 
-// console.log(await getCommitHashes(githubUrl));
-
-// await pollCommits("d62a4cfd-ba6a-4d7a-b9cf-680ef5a3f4a9").then(console.log);
