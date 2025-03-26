@@ -4,12 +4,14 @@ import { ExternalLink, Github } from "lucide-react";
 import Link from "next/link";
 
 import React from "react"
+import CommitLog from "./commit-log";
 
 const DashboardPage = () => {
   const { project } = useProject();
   console.log("check" + project?.githubUrl)
   return (
     <div className="">
+      {project?.id}
       <div className="flex flex-center justify-between flex-wrap gap-y-4">
         <div className="w-fit rounded-md bg-primary px-4 py-2">
           <div className="flex items-center">
@@ -36,7 +38,7 @@ const DashboardPage = () => {
       </div>
 
       <div className="mt-8">
-        Commit Log
+        <CommitLog/>
       </div>
     </div>
   )
