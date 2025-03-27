@@ -5,13 +5,14 @@ import Link from "next/link";
 
 import React from "react"
 import CommitLog from "./commit-log";
+import AskQuestionCard from "./ask-question-card";
 
 const DashboardPage = () => {
   const { project } = useProject();
   console.log("check" + project?.githubUrl)
   return (
     <div className="">
-      {project?.id}
+      {/* {project?.id} */}
       <div className="flex flex-center justify-between flex-wrap gap-y-4">
         <div className="w-fit rounded-md bg-primary px-4 py-2">
           <div className="flex items-center">
@@ -32,8 +33,8 @@ const DashboardPage = () => {
 
       <div className="my-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          AskQuestion
-          MeetingCard
+          <AskQuestionCard/>
+          {/* MeetingCard */}
         </div>
       </div>
 

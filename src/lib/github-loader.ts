@@ -10,7 +10,7 @@ export const loadGithubRepo = async (githubUrl: string, githubToken?: string) =>
     const loader = new GithubRepoLoader(githubUrl, {
         accessToken: githubToken || '',
         branch: 'main',
-        ignoreFiles: ['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb'],
+        ignoreFiles: ['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb', '.svg' ],
         recursive: true,
         unknown: "warn",
         maxConcurrency: 2,
