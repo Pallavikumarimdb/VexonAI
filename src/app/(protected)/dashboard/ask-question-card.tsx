@@ -16,6 +16,7 @@ import { readStreamableValue } from 'ai/rsc';
 import CodeReferences from './code-references';
 import { api } from '@/trpc/react';
 import { toast } from 'sonner';
+import useRefetch from '@/hooks/use-refetch';
 
 export default function AskQuestionCard() {
     const { project } = useProject();
@@ -44,17 +45,19 @@ export default function AskQuestionCard() {
                 setAnswer(ans => ans + delta);
             }
         }
+        setLoading(false);
     }
+    const refetch = useRefetch();
     return (
         <>
             <Dialog open={open} onOpenChange={setOpen} >
-                <DialogContent className='min-w-[70vw] max-w-[70vh] h-[98vh] py-2 flex flex-col gap-1'>
+                <DialogContent className='min-w-[70vw] max-w-[70vh] max-h-[98vh] py-2 flex flex-col gap-1'>
                     <DialogHeader>
-                        <div className="flex item-center gap-2">
+                        <div className="flex item-center gap-8 mt-2">
                         <DialogTitle>
-                            <Image src="/logo.png" alt="Logo" width={40} height={40} />
+                            <Image src="/logo.png" alt="Logo" width={70} height={70} className='rounded-md'/>
                         </DialogTitle>
-                        <Button variant={'outline'} disabled={saveAnswer.isPending} onClick={() => {
+                        <Button variant={'default'} disabled={saveAnswer.isPending} className='bg-green-500 text-white' onClick={() => {
                             saveAnswer.mutate({
                                 projectId: project!.id,
                                 question,
@@ -63,6 +66,7 @@ export default function AskQuestionCard() {
                             },{
                                 onSuccess: () => {
                                     toast.success('Answer saved successfully');
+                                    refetch();
                                 },
                                 onError: () => {
                                     toast.error('Error saving answer');
@@ -83,7 +87,7 @@ export default function AskQuestionCard() {
                                 scrollbarWidth: 'thin',
                                 scrollbarColor: 'gray lightgray'
                             }}
-                            className="w-full h-full p-1 scroll-smooth"
+                            className="w-full h-full p-2 scroll-smooth"
                         />
                     <div className="h-4"></div>
                         <CodeReferences filesReferences={filesReferences} />

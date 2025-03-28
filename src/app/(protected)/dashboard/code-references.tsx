@@ -33,7 +33,7 @@ const CodeReferences = ({ filesReferences }: Props) => {
                     ))}
                 </div>
 
-                <div className="max-h-[40vh] overflow-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-400">
+                <div className="max-h-[50vh] overflow-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-400">
                     {filesReferences.map((file, index) => (
                         <TabsContent
                             key={file.fileName}
