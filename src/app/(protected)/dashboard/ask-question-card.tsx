@@ -13,6 +13,9 @@ import { set } from 'date-fns';
 import type { FieldName } from 'react-hook-form';
 import { askQuestion } from './actions';
 import { readStreamableValue } from 'ai/rsc';
+import CodeReferences from './code-references';
+import { api } from '@/trpc/react';
+import { toast } from 'sonner';
 
 export default function AskQuestionCard() {
     const { project } = useProject();
@@ -21,6 +24,7 @@ export default function AskQuestionCard() {
     const [loading, setLoading] = React.useState(false);
     const [filesReferences, setFilesReferences] = React.useState<{ fileName: string, sourceCode: string, summary: string }[]>([]);
     const [answer, setAnswer] = React.useState('');
+    const saveAnswer = api.project.saveAnswer.useMutation();
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         setAnswer('');
@@ -43,28 +47,55 @@ export default function AskQuestionCard() {
     }
     return (
         <>
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className='min-w-[60vw]  '>
+            <Dialog open={open} onOpenChange={setOpen} >
+                <DialogContent className='min-w-[70vw] max-w-[70vh] h-[98vh] py-2 flex flex-col gap-1'>
                     <DialogHeader>
+                        <div className="flex item-center gap-2">
                         <DialogTitle>
                             <Image src="/logo.png" alt="Logo" width={40} height={40} />
                         </DialogTitle>
+                        <Button variant={'outline'} disabled={saveAnswer.isPending} onClick={() => {
+                            saveAnswer.mutate({
+                                projectId: project!.id,
+                                question,
+                                answer,
+                                filesReferences
+                            },{
+                                onSuccess: () => {
+                                    toast.success('Answer saved successfully');
+                                },
+                                onError: () => {
+                                    toast.error('Error saving answer');
+                                }
+                            })
+                        }}>
+                            Save Answer
+                        </Button>
+                        </div>
                     </DialogHeader>
-                    <MDEditor.Markdown
-                        source={answer}
-                        style={{
-                            background: 'white',
-                            color: 'black',
-                            maxHeight: '70vh',
-                            overflowY: 'auto',
-                            scrollbarWidth: 'thin', 
-                            scrollbarColor: 'gray lightgray'
-                        }}
-                        className="bg-white p-4 w-full max-h-[70vh] overflow-y-auto scroll-smooth"
-                    />
-
-                    <Button type='button' onClick={() => setOpen(false)}>Close</Button>
-
+                        <MDEditor.Markdown
+                            source={answer}
+                            style={{
+                                background: 'white',
+                                color: 'black',
+                                maxHeight: '100%',
+                                overflowY: 'auto',
+                                scrollbarWidth: 'thin',
+                                scrollbarColor: 'gray lightgray'
+                            }}
+                            className="w-full h-full p-1 scroll-smooth"
+                        />
+                    <div className="h-4"></div>
+                        <CodeReferences filesReferences={filesReferences} />
+                    <div className="flex justify-center">
+                        <Button
+                            type="button"
+                            onClick={() => setOpen(false)}
+                            className="m-0 px-6 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                        >
+                            Close
+                        </Button>
+                        </div>
                 </DialogContent>
             </Dialog>
             <Card className='relative col-span-2  '>

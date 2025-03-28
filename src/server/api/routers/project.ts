@@ -38,7 +38,7 @@ export const projectRouter = createTRPCRouter({
                 githubToken: input.githubToken,
                 userToProject: {
                     create: {
-                        userId: user.id, // Pass correct userId
+                        userId: user.id,
                     }
                 }
             }
@@ -68,6 +68,22 @@ export const projectRouter = createTRPCRouter({
             where: {
                 projectId: input.projectId,
             },
+        });
+    }),
+    saveAnswer: protectedProcedure.input(z.object({
+        projectId: z.string(),
+        question: z.string(),
+        answer: z.string(),
+        filesReferences: z.any(),
+    })).mutation(async ({ ctx, input }) => {
+        return await ctx.prisma.question.create({
+            data: {
+                projectId: input.projectId,
+                filesReferences: input.filesReferences,
+                question: input.question,
+                answer: input.answer,
+                userId: ctx.user.id,
+            }
         });
     })
 });
