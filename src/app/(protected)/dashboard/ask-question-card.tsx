@@ -17,6 +17,7 @@ import CodeReferences from './code-references';
 import { api } from '@/trpc/react';
 import { toast } from 'sonner';
 import useRefetch from '@/hooks/use-refetch';
+import Link from 'next/link';
 
 export default function AskQuestionCard() {
     const { project } = useProject();
@@ -54,55 +55,60 @@ export default function AskQuestionCard() {
                 <DialogContent className='min-w-[70vw] max-w-[70vh] max-h-[98vh] py-2 flex flex-col gap-1'>
                     <DialogHeader>
                         <div className="flex item-center gap-8 mt-2">
-                        <DialogTitle>
-                            <Image src="/logo.png" alt="Logo" width={70} height={70} className='rounded-md'/>
-                        </DialogTitle>
-                        <Button variant={'default'} disabled={saveAnswer.isPending} className='bg-green-500 text-white' onClick={() => {
-                            saveAnswer.mutate({
-                                projectId: project!.id,
-                                question,
-                                answer,
-                                filesReferences
-                            },{
-                                onSuccess: () => {
-                                    toast.success('Answer saved successfully');
-                                    refetch();
-                                },
-                                onError: () => {
-                                    toast.error('Error saving answer');
-                                }
-                            })
-                        }}>
-                            Save Answer
-                        </Button>
+                            <DialogTitle>
+                                <Link href="/" className="flex items-center space-x-2">
+                                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-vexon-lightPurple to-vexon-purple flex items-center justify-center">
+                                        <span className="text-white font-bold">V</span>
+                                    </div>
+                                    <span className="font-bold text-xl">Vexon AI</span>
+                                </Link>
+                            </DialogTitle>
+                            <Button variant={'default'} disabled={saveAnswer.isPending} className='bg-vexon-purple text-white' onClick={() => {
+                                saveAnswer.mutate({
+                                    projectId: project!.id,
+                                    question,
+                                    answer,
+                                    filesReferences
+                                }, {
+                                    onSuccess: () => {
+                                        toast.success('Answer saved successfully');
+                                        refetch();
+                                    },
+                                    onError: () => {
+                                        toast.error('Error saving answer');
+                                    }
+                                })
+                            }}>
+                                Save Answer
+                            </Button>
                         </div>
                     </DialogHeader>
-                        <MDEditor.Markdown
-                            source={answer}
-                            style={{
-                                background: 'white',
-                                color: 'black',
-                                maxHeight: '100%',
-                                overflowY: 'auto',
-                                scrollbarWidth: 'thin',
-                                scrollbarColor: 'gray lightgray'
-                            }}
-                            className="w-full h-full p-2 scroll-smooth"
-                        />
+                    <MDEditor.Markdown
+                        source={answer}
+                        style={{
+                            background: 'white',
+                            color: 'black',
+                            maxHeight: '100%',
+                            overflowY: 'auto',
+                            scrollbarWidth: 'thin',
+                            scrollbarColor: 'gray lightgray'
+                        }}
+                        className="w-full h-full p-2 bg-slate-200 scroll-smooth"
+                    />
                     <div className="h-4"></div>
-                        <CodeReferences filesReferences={filesReferences} />
+                    <CodeReferences filesReferences={filesReferences} />
                     <div className="flex justify-center">
                         <Button
                             type="button"
                             onClick={() => setOpen(false)}
-                            className="m-0 px-6 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                            className="m-0 px-6 py-2 text-white bg-vexon-dark-purple rounded-md hover:bg-blue-600"
                         >
                             Close
                         </Button>
-                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
-            <Card className='relative col-span-2  '>
+            <Card className='relative col-span-2 bg-vexon-light-purple/30'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <span>Ask a Question</span>

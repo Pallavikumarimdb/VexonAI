@@ -27,7 +27,7 @@ export default function QAPage() {
             {questions?.map((question, index) => {
                 return <React.Fragment key={question.id}>
                     <SheetTrigger onClick={() => setQuestionIndex(index)}>
-                        <div className='flex items-center gap-4 p-4 rounded-md bg-white hover:bg-gray-100 cursor-pointer shadow border'>
+                        <div className='flex items-center gap-4 p-4 rounded-md bg-[#d0c8f9] hover:bg-gray-100 cursor-pointer shadow border'>
                             <img className='rounded-full' src={question.user.imageUrl ?? ''} height={30} width={30} />
 
                             <div className='text-left flex flex-col'>

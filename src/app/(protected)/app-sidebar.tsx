@@ -9,49 +9,57 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-const items=[
+const items = [
     {
-    title:"Dashboard",
-    path:"/dashboard",
-    icon: LayoutDashboard
+        title: "Dashboard",
+        path: "/dashboard",
+        icon: LayoutDashboard
     },
     {
-    title:"Q&A",
-    path:"/qa",
-    icon: Bot
+        title: "Q&A",
+        path: "/qa",
+        icon: Bot
     },
     {
-    title:"Meetings",
-    path:"/meetings",
-    icon: Presentation
+        title: "Meetings",
+        path: "/meetings",
+        icon: Presentation
     },
     {
-    title:"Billing",
-    path:"/billing",
-    icon: CreditCard
+        title: "Billing",
+        path: "/billing",
+        icon: CreditCard
     }
 ]
 
 
 export default function AppSidebar() {
-    const pathname=usePathname();
-    const open=useSidebar();
-    const {projects, projectId, setProjectsId} = useProject();
+    const pathname = usePathname();
+    const open = useSidebar();
+    const { projects, projectId, setProjectsId } = useProject();
 
     console.log(open)
     return (
-        <Sidebar collapsible="icon" variant="floating">
-            <SidebarHeader>
+        <Sidebar collapsible="icon" variant="floating" className="">
+            <SidebarHeader className="rounded-lg shadow-lg border border-white/20 backdrop-blur-xl">
                 <div className="flex items-center gap-2">
-                    {/* <Image src="/logo.png" width={40} height={40} alt="logo" /> */}
+                   {!open.open && (
+                     <div className="h-8 w-8 rounded-full bg-gradient-to-br from-vexon-light-purple to-vexon-purple flex items-center justify-center">
+                     <span className="text-white font-bold">V</span>
+                 </div>
+                   )}
                     {open.open && (
-                        // <h1 className="font-mono italic text-xl font-bold text-primary/80">VexonAI</h1>
-                        <Image src="/logo.png" width={70} height={70} className="rounded-md" alt="logo" />
+                        <Link href="/" className="flex items-center space-x-2">
+                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-vexon-light-purple to-vexon-purple flex items-center justify-center">
+                                <span className="text-white font-bold">V</span>
+                            </div>
+                            <span className="font-bold text-xl">Vexon AI</span>
+                        </Link>
                     )}
                 </div>
             </SidebarHeader>
 
-            <SidebarContent>
+            <SidebarContent className="rounded-lg shadow-lg">
                 <SidebarGroup>
                     <SidebarGroupLabel>
                         Application
@@ -59,22 +67,22 @@ export default function AppSidebar() {
 
                     <SidebarGroupContent>
                         <SidebarMenu>
-                        {items.map((item) => {
-                            return (
-                                <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild>
-                                        <Link href={item.path} className={cn({
-                                            'bg-primary text-white': pathname === item.path,
-                                        })}>
-                                            <item.icon/>
-                                            <span>
-                                                {item.title}
-                                            </span>
-                                        </Link>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            )
-                        })}
+                            {items.map((item) => {
+                                return (
+                                    <SidebarMenuItem key={item.title}>
+                                        <SidebarMenuButton asChild>
+                                            <Link href={item.path} className={cn({
+                                                'bg-primary text-white': pathname === item.path,
+                                            })}>
+                                                <item.icon />
+                                                <span>
+                                                    {item.title}
+                                                </span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                )
+                            })}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
@@ -87,37 +95,37 @@ export default function AppSidebar() {
 
                     <SidebarGroupContent>
                         <SidebarMenu>
-                        {projects?.map((project) => {
-                            return (
-                                <SidebarMenuItem key={project.name}>
-                                    <SidebarMenuButton asChild>
-                                        <div onClick={()=>{
-                                            setProjectsId(project.id)
-                                        }}>
-                                            <div className={cn(
-                                                'rounded-sm border size-6 flex item-center justify-center text-md bg-white text-primary',
-                                                {
-                                                    'bg-primary text-white': project.id === projectId,
-                                                }
-                                            )}>
-                                                {project.name[0]}
+                            {projects?.map((project) => {
+                                return (
+                                    <SidebarMenuItem key={project.name}>
+                                        <SidebarMenuButton asChild>
+                                            <div onClick={() => {
+                                                setProjectsId(project.id)
+                                            }}>
+                                                <div className={cn(
+                                                    'rounded-sm border size-6 flex item-center justify-center text-md bg-white text-primary',
+                                                    {
+                                                        'bg-primary text-white': project.id === projectId,
+                                                    }
+                                                )}>
+                                                    {project.name[0]}
+                                                </div>
+                                                {open.open && <span>{project.name}</span>}
                                             </div>
-                                            {open.open && <span>{project.name}</span>}
-                                        </div>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            )
-                        })}
-                        {open.open && 
-                        <div className="h-2">
-                        <SidebarMenuItem>
-                        <Link href='/create'>
-                        <Button size='sm' variant={'outline'} className="mt-2 w-fit">
-                            <Plus/>
-                            Create Project
-                        </Button></Link>
-                        </SidebarMenuItem>
-                    </div>}
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                )
+                            })}
+                            {open.open &&
+                                <div className="h-2">
+                                    <SidebarMenuItem>
+                                        <Link href='/create'>
+                                            <Button size='sm' variant={'outline'} className="mt-2 w-fit">
+                                                <Plus />
+                                                Create Project
+                                            </Button></Link>
+                                    </SidebarMenuItem>
+                                </div>}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>

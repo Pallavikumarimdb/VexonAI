@@ -16,13 +16,13 @@ const CodeReferences = ({ filesReferences }: Props) => {
     return (
         <div className="">
             <Tabs value={tab} onValueChange={setTab} className="w-full">
-                <div className="overflow-x-auto flex gap-1 bg-gray-200 p-1 rounded-md scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-400">
+                <div className="overflow-x-auto flex gap-1 bg-gray-600 p-1 rounded-md scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-400">
                     {filesReferences.map((file) => (
                         <button
                             onClick={() => setTab(file.fileName)}
                             key={file.fileName}
                             className={cn(
-                                'px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap text-muted-foreground hover:bg-muted',
+                                'px-3 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap text-muted-foreground hover:bg-slate-800',
                                 {
                                     'bg-primary text-primary-foreground': tab === file.fileName,
                                 }
@@ -33,7 +33,7 @@ const CodeReferences = ({ filesReferences }: Props) => {
                     ))}
                 </div>
 
-                <div className="max-h-[50vh] overflow-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-400">
+                <div className="max-h-[40vh] overflow-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-400">
                     {filesReferences.map((file, index) => (
                         <TabsContent
                             key={file.fileName}

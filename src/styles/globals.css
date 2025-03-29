@@ -4,9 +4,109 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  /* Container */
+  --container-center: true;
+  --container-padding: 2rem;
+
+  /* Colors */
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  /* Vexon Colors */
+  --color-vexon-purple: hsl(259, 29%, 50%);
+  --color-vexon-light-purple: hsl(251, 86%, 75%);
+  --color-vexon-dark-purple: hsl(225, 26%, 13%);
+  --color-vexon-gray: hsl(216, 5%, 56%);
+
+  /* Sidebar */
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  /* Border Radius */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  /* Keyframes */
+  --keyframes-accordion-down: {
+      from { height: 0; }
+      to { height: var(--radix-accordion-content-height); }
+  };
+  --keyframes-accordion-up: {
+      from { height: var(--radix-accordion-content-height); }
+      to { height: 0; }
+  };
+  --keyframes-fade-in: {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+  };
+  --keyframes-fade-out: {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(10px); }
+  };
+  --keyframes-scale-in: {
+      0% { transform: scale(0.95); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+  };
+  --keyframes-float: {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+  };
+  --keyframes-typing: {
+      0% { width: 0%; }
+      100% { width: 100%; }
+  };
+  --keyframes-blink: {
+      50% { border-color: transparent; }
+  };
+
+  /* Animations */
+  --animation-accordion-down: accordion-down 0.2s ease-out;
+  --animation-accordion-up: accordion-up 0.2s ease-out;
+  --animation-fade-in: fade-in 0.5s ease-out;
+  --animation-fade-in-slow: fade-in 0.8s ease-out;
+  --animation-fade-in-delay: fade-in 0.5s ease-out 0.3s forwards;
+  --animation-fade-in-delay-2: fade-in 0.5s ease-out 0.6s forwards;
+  --animation-scale-in: scale-in 0.5s ease-out;
+  --animation-float: float 6s ease-in-out infinite;
+  --animation-typing: typing 3.5s steps(40, end);
+  --animation-blink: blink 1s step-end infinite;
+
+  /* Additional Colors */
+  --color-gray-900: hsl(var(--gray-900));
+  --color-gray-800: hsl(var(--gray-800));
+  --color-gray-700: hsl(var(--gray-700));
+  --color-gray-600: hsl(var(--gray-600));
+  --color-gray-400: hsl(var(--gray-400));
+  --color-gray-300: hsl(var(--gray-300));
+  --color-gray-200: hsl(var(--gray-200));
+  --color-gray-100: hsl(var(--gray-100));
+  --color-primary: hsl(var(--primary));
+  --color-custom-dark: hsl(var(--custom-dark));
 }
+
+
 
 :root {
   --radius: 0.625rem;
@@ -105,14 +205,6 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
@@ -142,4 +234,59 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+
+
+.wmde-markdown pre > code {
+  background-color: #cbcfd3;
+}
+button{
+  cursor: pointer;
+}
+
+.sidebar-container{
+  border-color: aqua;
+}
+
+.sidebar{
+  border-color: aqua;
+
 }
