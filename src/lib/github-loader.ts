@@ -48,13 +48,11 @@ export const indexGithubRepo = async (projectId: string, githubUrl: string, gith
                 }
             });
 
-            await prisma.$executeRawUnsafe(
-                `UPDATE "SourceCodeEmbedding"
-                 SET "summaryEmbedding" = $1
-                 WHERE "id" = $2`,
-                embedding.embedding,
-                sourceCodeEmbedding.id
-            );
+            await prisma.$executeRaw`
+            UPDATE "SourceCodeEmbedding"
+            SET "summaryEmbedding" = ${embedding.embedding}::vector
+            WHERE "id" = ${sourceCodeEmbedding.id}
+            `;
 
         } catch (error) {
             console.error(`Error processing embedding ${index}:`, error);
@@ -77,7 +75,7 @@ const generateEmbeddings = async (docs: Document[]) => {
             return {
                 summary,
                 embedding,
-                sourceCode: JSON.stringify(doc.pageContent), 
+                sourceCode: JSON.parse(JSON.stringify(doc.pageContent)),
                 fileName: doc.metadata.source as string, 
             };
         } catch (error) {

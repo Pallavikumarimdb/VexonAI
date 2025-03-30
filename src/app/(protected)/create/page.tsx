@@ -35,8 +35,8 @@ const CreatePage = () => {
     }
 
     return (
-        <div className="flex items-center gap-12 h-full justify-center">    
-            <Image src="/logo.png" alt="logo" width={224} height={224} priority />
+        <div className="flex items-center gap-12 pt-[10%] h-full justify-center">    
+            <Image src="/img.jpeg" alt="logo" width={300} height={30} priority className="rounded-xl" />
             
             <div>
                 <div>

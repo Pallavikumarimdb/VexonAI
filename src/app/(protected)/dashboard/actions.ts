@@ -18,7 +18,7 @@ export async function askQuestion(question: string, projectId: string) {
     const queryVector = await generateEmbedding(question);
     const vectorQuery = `[${queryVector.join(',')}]`;
 
-    const result: { fileName: string; sourceCode: string; summary: string }[] = await prisma.$queryRaw`
+    const result = await prisma.$queryRaw`
     SELECT "fileName", "sourceCode", "summary",
     1 - ("summaryEmbedding" <=> ${vectorQuery}::vector) as similarity
     FROM "SourceCodeEmbedding"
@@ -26,7 +26,7 @@ export async function askQuestion(question: string, projectId: string) {
     AND "projectId" = ${projectId}
     ORDER BY similarity DESC
     LIMIT 10;
-    `;
+    `as {fileName: string, sourceCode: string, summary: string}[];;
 
     let context = ''
 
