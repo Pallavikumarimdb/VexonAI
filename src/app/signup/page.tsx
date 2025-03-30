@@ -5,7 +5,6 @@ import SignUp from "./signup";
 const SignupPage = () => {
   return (
     <div className="min-h-screen flex">
-      {/* Left panel with form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-md">
           <Link href="/" className="flex items-center space-x-2 mb-10">
@@ -19,7 +18,6 @@ const SignupPage = () => {
         </div>
       </div>
       
-      {/* Right panel with background - visible on lg and above */}
       <div className="hidden lg:block lg:w-1/2 relative bg-vexon-purple">
         <div className="absolute inset-0 bg-gradient-to-br from-vexon-purple via-vexon-purple to-vexon-darkPurple opacity-90"></div>
         
@@ -33,7 +31,7 @@ const SignupPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
               <div className="bg-white/10 p-4 rounded-lg">
                 <div className="text-white/90 font-medium mb-2">Quick Repository Summaries</div>
-                <p className="text-white/70 text-sm">Get instant insights about what's happening in your codebase.</p>
+                <p className="text-white/70 text-sm">Get instant insights about what&apos;s happening in your codebase.</p>
               </div>
               
               <div className="bg-white/10 p-4 rounded-lg">

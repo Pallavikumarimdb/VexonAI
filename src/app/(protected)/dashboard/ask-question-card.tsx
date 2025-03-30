@@ -2,15 +2,12 @@
 
 import MDEditor from '@uiw/react-md-editor';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea'
 import useProject from '@/hooks/use-project';
-import { Sparkles, Wand, WandSparkles } from 'lucide-react';
+import { Sparkles, WandSparkles } from 'lucide-react';
 import React from 'react'
-import { set } from 'date-fns';
-import type { FieldName } from 'react-hook-form';
 import { askQuestion } from './actions';
 import { readStreamableValue } from 'ai/rsc';
 import CodeReferences from './code-references';
@@ -34,20 +31,30 @@ export default function AskQuestionCard() {
         e.preventDefault();
         if (!project?.id) return;
         setLoading(true);
-
-
-        const { output, filesReferences } = await askQuestion(question, project.id);
-        setOpen(true);
-        setLoading(false);
-        setFilesReferences(filesReferences);
-
-        for await (const delta of readStreamableValue(output)) {
-            if (delta) {
-                setAnswer(ans => ans + delta);
-            }
+    
+        try {
+            const { output, filesReferences } = await askQuestion(question, project.id);
+            setOpen(true);
+            setLoading(false);
+            setFilesReferences(filesReferences);
+    
+            const streamAnswer = async () => {
+                for await (const delta of readStreamableValue(output)) {
+                    if (delta) {
+                        setAnswer(ans => ans + delta);
+                    }
+                }
+            };
+            await streamAnswer();
+    
+        } catch (error) {
+            console.error('Error asking question:', error);
+            toast.error('An error occurred while processing your request.');
+            setLoading(false);
         }
-        setLoading(false);
-    }
+    };
+    
+    
     const refetch = useRefetch();
     return (
         <>
@@ -63,16 +70,17 @@ export default function AskQuestionCard() {
                                     <span className="font-bold text-xl">Vexon AI</span>
                                 </Link>
                             </DialogTitle>
-                            <Button variant={'default'} disabled={saveAnswer.isPending} className='bg-vexon-purple text-white' onClick={() => {
+                            <Button variant={'default'} disabled={saveAnswer.isPending} className='bg-vexon-purple text-white' onClick={ () => {
+                                if (!project?.id) return;                              
                                 saveAnswer.mutate({
-                                    projectId: project!.id,
+                                    projectId: project.id,
                                     question,
                                     answer,
                                     filesReferences
                                 }, {
                                     onSuccess: () => {
                                         toast.success('Answer saved successfully');
-                                        refetch();
+                                        void refetch();
                                     },
                                     onError: () => {
                                         toast.error('Error saving answer');

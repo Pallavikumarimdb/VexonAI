@@ -8,7 +8,7 @@ import { prisma } from '@/server/db';
 import "dotenv/config";
 
 const google = createGoogleGenerativeAI({
-    apiKey: process.env.GEMINI_API_KEY || '',
+    apiKey: process.env.GEMINI_API_KEY ?? '', 
 })
 
 
@@ -18,7 +18,7 @@ export async function askQuestion(question: string, projectId: string) {
     const queryVector = await generateEmbedding(question);
     const vectorQuery = `[${queryVector.join(',')}]`;
 
-    const result = await prisma.$queryRaw`
+    const result: { fileName: string; sourceCode: string; summary: string }[] = await prisma.$queryRaw`
     SELECT "fileName", "sourceCode", "summary",
     1 - ("summaryEmbedding" <=> ${vectorQuery}::vector) as similarity
     FROM "SourceCodeEmbedding"
@@ -26,7 +26,7 @@ export async function askQuestion(question: string, projectId: string) {
     AND "projectId" = ${projectId}
     ORDER BY similarity DESC
     LIMIT 10;
-    ` as {fileName: string, sourceCode: string, summary: string}[];
+    `;
 
     let context = ''
 
@@ -35,8 +35,8 @@ export async function askQuestion(question: string, projectId: string) {
     }
 
 
-    (async () => {
-        const {textStream} = await streamText({
+    void (async () => { 
+        const response = streamText({
             model: google('gemini-1.5-flash'),
             prompt: `
             You are an ai code assistant who answers questions about the codebase. Your target audience is a technical interns who is looking to understand the codebase.
@@ -61,6 +61,8 @@ export async function askQuestion(question: string, projectId: string) {
             `
         })
 
+        const { textStream } = response;
+        
         for await (const dalta of textStream) {
             stream.update(dalta)
         }

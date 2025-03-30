@@ -1,49 +1,46 @@
 'use client'
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useRefetch from "@/hooks/use-refetch";
 import { api } from "@/trpc/react";
-import { create } from "domain";
-import { on } from "events";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import Image from "next/image";
 
-
-type FormInput ={
+type FormInput = {
     repoUrl: string;
     projectName: string;
     githubToken: string;
-}
+};
 
 const CreatePage = () => {
-    const { register, handleSubmit, reset,formState: { errors } } = useForm<FormInput>();
+    const { register, handleSubmit, reset } = useForm<FormInput>();
     const createProject = api.project.createProject.useMutation();
     const refetch = useRefetch();
 
-    function onsubmit(data: FormInput) {
-        // window.alert(JSON.stringify(data, null, 2))
-        createProject.mutate({
-            githubUrl: data.repoUrl,
-            name: data.projectName,
-            githubToken: data.githubToken,
-        },{
-        onSuccess: () => {
-            toast.success('Project Created Successfully')
-            refetch()
-            reset()
-        },
-        onError: () => {
-            toast.error('Project Creation Failed')
+    async function onsubmit(data: FormInput) {
+        try {
+            await createProject.mutateAsync({
+                githubUrl: data.repoUrl,
+                name: data.projectName,
+                githubToken: data.githubToken,
+            });
+            toast.success('Project Created Successfully');
+            await  refetch();
+                   reset();
+        } catch (error) {
+            toast.error('Project Creation Failed');
         }
-        })
-        return true;
     }
-    return(
-        <div className="flex item-center gap-12 h-full justify-center">
-            <img src="/logo.png" alt="logo" className="h-56 w-auto" />
+
+    return (
+        <div className="flex items-center gap-12 h-full justify-center">    
+            <Image src="/logo.png" alt="logo" width={224} height={224} priority />
+            
             <div>
                 <div>
-                    <h1 className="font-smibold text-2xl">
+                    <h1 className="font-semibold text-2xl">
                         Link Your Github Repository
                     </h1>
                     <p className="text-sm text-muted-foreground">
@@ -53,24 +50,12 @@ const CreatePage = () => {
                 <div className="h-4"></div>
 
                 <div>
-                    <form action="" onSubmit={handleSubmit(onsubmit)}>
-                        <Input
-                        {...register('projectName', {required: true})}
-                        placeholder="Project Name"
-                        required
-                        />
+                    <form onSubmit={handleSubmit(onsubmit)}>
+                        <Input {...register('projectName', { required: true })} placeholder="Project Name" required />
                         <div className="h-2"></div>
-                        <Input
-                        {...register('repoUrl', {required: true})}
-                        placeholder="Github Url"
-                        type="url"
-                        required
-                        />
+                        <Input {...register('repoUrl', { required: true })} placeholder="Github URL" type="url" required />
                         <div className="h-2"></div>
-                        <Input
-                        {...register('githubToken')}
-                        placeholder="Github Token (Optional)"
-                        />
+                        <Input {...register('githubToken')} placeholder="Github Token (Optional)" />
                         <div className="h-2"></div>
                         <Button type="submit" disabled={createProject.isPending}>
                             Create Project
@@ -79,7 +64,7 @@ const CreatePage = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default CreatePage;

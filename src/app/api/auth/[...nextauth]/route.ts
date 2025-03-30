@@ -3,13 +3,14 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
+import { type User } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 const authOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
-    strategy: "jwt" as "jwt",
+    strategy: "jwt" as const,
   },
   providers: [
     CredentialsProvider({
@@ -23,7 +24,7 @@ const authOptions = {
           throw new Error("Missing credentials");
         }
 
-        const user = await prisma.user.findUnique({
+        const user: User | null = await prisma.user.findUnique({
           where: { emailAddress: credentials.email },
         });
 
@@ -41,19 +42,17 @@ const authOptions = {
     }),
   ],
   callbacks: {
-    //@ts-ignore
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.email = user.emailAddress; // ✅ Ensure email is included
+        token.email = user.emailAddress; 
       }
       return token;
     },
-    //@ts-ignore
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.email = token.email as string; // ✅ Ensure session contains email
+        session.user.email = token.email as string;
       }
       return session;
     },
@@ -65,6 +64,6 @@ const authOptions = {
   },
 };
 
-// ✅ Fix: Export named HTTP handlers instead of `export default`
+
 export const GET = NextAuth(authOptions);
 export const POST = NextAuth(authOptions);

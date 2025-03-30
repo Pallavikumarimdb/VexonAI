@@ -20,38 +20,47 @@ export default function SignUp() {
   const router = useRouter()
   const { toast } = useToast();;
 
+  interface ErrorResponse {
+    message: string;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (!firstName || !lastName || !emailAddress || !password) {
-        toast({
-          title: "Invalid input",
-          description: "Please fill in all fields.",
-        });
-        return;
+      toast({
+        title: "Invalid input",
+        description: "Please fill in all fields.",
+      });
+      return;
+    }
+  
+    if (!agreedToTerms) {
+      toast({
+        title: "Terms agreement required",
+        description: "Please agree to the terms and conditions.",
+      });
+      return;
+    }
+  
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName, lastName, emailAddress, password }),
+      });
+  
+      if (res.ok) {
+        router.push("/signin");
+      } else {
+        const error: ErrorResponse = await res.json(); 
+        toast({ title: "Signup failed", description: error.message });
       }
-      
-      if (!agreedToTerms) {
-        toast({
-          title: "Terms agreement required",
-          description: "Please agree to the terms and conditions.",
-        });
-        return;
-      }
-
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ firstName, lastName, emailAddress, password }),
-    });
-
-    if (res.ok) {
-      router.push("/signin");
-    } else {
-      const error = await res.json();
-      alert(error.message);
+    } catch (err) {
+      toast({ title: "Network Error", description: "Please try again later." });
     }
   };
+
 
   return (
     <div className="w-full max-w-md mx-auto">

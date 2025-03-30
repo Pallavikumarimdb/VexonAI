@@ -19,7 +19,7 @@ const CTA = () => {
               viewport={{ once: true }}
             >
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight hero-gradient mb-6">
-                Ready to unlock your repository's full potential?
+                Ready to unlock your repository&apos;s full potential?
               </h2>
               
               <p className="text-xl text-foreground/70 mb-8 leading-relaxed">

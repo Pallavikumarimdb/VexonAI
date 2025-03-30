@@ -6,8 +6,10 @@ import { api } from '@/trpc/react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import AskQuestionCard from '../dashboard/ask-question-card'
 import MDEditor from '@uiw/react-md-editor'
-import { Code } from 'lucide-react'
 import CodeReferences from '../dashboard/code-references'
+
+
+
 
 
 export default function QAPage() {
@@ -70,7 +72,14 @@ export default function QAPage() {
              />
          </SheetHeader>
          <div className="h-3/5 mx-2 overflow-auto">
-             <CodeReferences filesReferences={(question.filesReferences ?? []) as any} />
+             <CodeReferences 
+             filesReferences={Array.isArray(question.filesReferences) ? question.filesReferences.filter((ref): ref is { fileName: string; sourceCode: string; summary: string } => 
+                 typeof ref === 'object' && 
+                 ref !== null && 
+                 'fileName' in ref && 
+                 'sourceCode' in ref && 
+                 'summary' in ref
+             ) : []} />
          </div>
      </SheetContent>
      

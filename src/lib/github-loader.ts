@@ -8,7 +8,7 @@ const githubQueue = new PQueue({ concurrency: 5, interval: 1000 });
 
 export const loadGithubRepo = async (githubUrl: string, githubToken?: string) => {
     const loader = new GithubRepoLoader(githubUrl, {
-        accessToken: githubToken || '',
+        accessToken: githubToken ?? '',
         branch: 'main',
         ignoreFiles: ['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb', '.svg' ],
         recursive: true,
@@ -30,14 +30,14 @@ export const indexGithubRepo = async (projectId: string, githubUrl: string, gith
         console.warn("No documents loaded from GitHub repository.");
         return;
     }
-    
+
     const allEmbeddings = await generateEmbeddings(docs);
-    
+
     await Promise.allSettled(allEmbeddings.map(async (embedding, index) => {
         console.log(`processing ${index} of ${allEmbeddings.length}`);
-        
+
         if (!embedding) return;
-        
+
         try {
             const sourceCodeEmbedding = await prisma.sourceCodeEmbedding.create({
                 data: {
@@ -47,30 +47,38 @@ export const indexGithubRepo = async (projectId: string, githubUrl: string, gith
                     projectId,
                 }
             });
-            
-        await prisma.$executeRaw`
-        UPDATE "SourceCodeEmbedding"
-        SET "summaryEmbedding" = ${embedding.embedding}::vector
-        WHERE "id" = ${sourceCodeEmbedding.id}
-            `;
+
+            await prisma.$executeRawUnsafe(
+                `UPDATE "SourceCodeEmbedding"
+                 SET "summaryEmbedding" = $1
+                 WHERE "id" = $2`,
+                embedding.embedding,
+                sourceCodeEmbedding.id
+            );
+
         } catch (error) {
             console.error(`Error processing embedding ${index}:`, error);
         }
     }));
 };
 
+
 const generateEmbeddings = async (docs: Document[]) => {
-    return await Promise.all(docs.map(async doc => {
+    return await Promise.all(docs.map(async (doc): Promise<{
+        summary: string;
+        embedding: number[];
+        sourceCode: string;
+        fileName: string;
+    } | null> => {
         try {
-            // Use existing functions with rate limiting
-            const summary = await summariseCode(doc);
-            const embedding = await generateEmbedding(summary);
+            const summary: string = await summariseCode(doc);
+            const embedding: number[] = await generateEmbedding(summary);
             
             return {
                 summary,
                 embedding,
-                sourceCode: JSON.parse(JSON.stringify(doc.pageContent)),
-                fileName: doc.metadata.source,
+                sourceCode: JSON.stringify(doc.pageContent), 
+                fileName: doc.metadata.source as string, 
             };
         } catch (error) {
             console.error("Error generating embeddings for document:", error);
@@ -78,6 +86,7 @@ const generateEmbeddings = async (docs: Document[]) => {
         }
     }));
 };
+
 
 
 

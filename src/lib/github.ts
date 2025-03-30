@@ -9,6 +9,13 @@ const githubQueue = new PQueue({ concurrency: 5, interval: 1000 });
 export const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
 });
+interface CommitData {
+    commit: {
+        author: {
+            date?: string;
+        } | null;
+    };
+}
 
 type CommitResponse = {
     commitHash: string;
@@ -25,7 +32,12 @@ export const getCommitHashes = async (githubUrl: string): Promise<CommitResponse
             throw new Error("Invalid github url");
         }
         const { data } = await githubQueue.add(() => octokit.rest.repos.listCommits({ owner, repo }));
-        const sortedCommits = data.sort((a: any, b: any) => new Date(b.commit.author.date).getTime() - new Date(a.commit.author.date).getTime()) as any[];
+        const sortedCommits = data.sort((a: CommitData, b: CommitData) => {
+            const dateA = a.commit.author?.date ? new Date(a.commit.author.date).getTime() : 0;
+            const dateB = b.commit.author?.date ? new Date(b.commit.author.date).getTime() : 0;
+            return dateB - dateA;
+        });
+        
         return sortedCommits.slice(0, 10).map((commit: any) => ({
             commitHash: commit.sha as string,
             commitMessage: commit.commit.message ?? "",
