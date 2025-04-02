@@ -2,15 +2,37 @@ import { GithubRepoLoader } from "@langchain/community/document_loaders/web/gith
 import { summariseCode, generateEmbedding } from "./gemini";
 import { Document } from '@langchain/core/documents';
 import { prisma } from "@/server/db";
-import PQueue from 'p-queue';
-
-const githubQueue = new PQueue({ concurrency: 5, interval: 1000 });
-
+ 
 export const loadGithubRepo = async (githubUrl: string, githubToken?: string) => {
     const loader = new GithubRepoLoader(githubUrl, {
         accessToken: githubToken ?? '',
         branch: 'main',
-        ignoreFiles: ['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb', '.svg' ],
+        ignoreFiles: [
+            'package-lock.json', 
+            'yarn.lock', 
+            'pnpm-lock.yaml', 
+            'bun.lockb', 
+            '**/*.svg',
+            '**/*/migration.sql',   
+            '**/*.png',   
+            '**/*.jpg',   
+            '**/*.jpeg',  
+            '**/*.gif',   
+            '**/*.bmp',   
+            '**/*.webp',  
+            '**/*.mp4',   
+            '**/*.mp3',   
+            '**/*.avi',   
+            '**/*.mov',   
+            '**/*.wav',   
+            '**/*.flac',  
+            '**/*.ogg',   
+            '**/*.zip',   
+            '**/*.tar',   
+            '**/*.rar',   
+            '**/*.7z',    
+            '**/node_modules/**',
+        ],
         recursive: true,
         unknown: "warn",
         maxConcurrency: 2,

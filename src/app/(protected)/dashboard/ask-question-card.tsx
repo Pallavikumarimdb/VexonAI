@@ -71,16 +71,16 @@ export default function AskQuestionCard() {
                                 </Link>
                             </DialogTitle>
                             <Button variant={'default'} disabled={saveAnswer.isPending} className='bg-vexon-purple text-white' onClick={ () => {
-                                if (!project?.id) return;                              
+                                // if (!project?.id) return;                              
                                 saveAnswer.mutate({
-                                    projectId: project.id,
+                                    projectId: project!.id,
                                     question,
                                     answer,
                                     filesReferences
                                 }, {
                                     onSuccess: () => {
                                         toast.success('Answer saved successfully');
-                                        void refetch();
+                                        refetch();
                                     },
                                     onError: () => {
                                         toast.error('Error saving answer');
