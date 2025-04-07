@@ -54,43 +54,63 @@ It is given only as an example of appropriate comments.`,
 
 export async function summariseCode(doc: Document) {
     return globalRateLimiter.executeWithRateLimit(async () => {
-        console.log("getting summary for", doc.metadata.source);
+        console.log("Getting summary for:", doc.metadata.source);
+
         try {
-            const code = doc.pageContent.slice(0, 10000);
-            const response = await model.generateContent([
-                `You are an intelligent senior software engineer who specialises in onboarding junior software engineer onto projects.`,
-                `You are onboarding a junior software engineer and explaining to them the purpose of the ${doc.metadata.source} file.
-                Here is the code:
-                ---
-                ${code}
-                ---
-                Give a summary no more than 100 words of the code above.
-                `,
-            ]);
+            const codeSnippet = doc.pageContent.slice(0, 10000);
+            const filePath = doc.metadata.source?.toLowerCase() || '';
+
+            let prompt = "";
+
+            if (filePath.endsWith(".md") || filePath.includes("readme")) {
+                prompt = `Summarize this documentation file for a new developer joining the project in 100 words or less:\n\n${codeSnippet}`;
+            } else if (
+                filePath.includes("config") ||
+                filePath.endsWith(".json") ||
+                filePath.endsWith(".env")
+            ) {
+                prompt = `Explain the purpose of this configuration file in 100 words or less for someone new to the project:\n\n${codeSnippet}`;
+            } else {
+                prompt = `
+You are a senior software engineer onboarding a junior developer.
+
+Explain in 100 words or less what the following file (${filePath}) does, and its role in the project.
+
+Here is the file content:
+---
+${codeSnippet}
+---`;
+            }
+
+            const response = await model.generateContent([prompt]);
             return response.response.text();
         } catch (error) {
-            console.error("Error summarizing code:", error);
-            return '';
+            console.error("Gemini summarization failed:", error);
+            return "This file is part of the project but could not be summarized due to limitations.";
         }
     });
 }
 
 export async function generateEmbedding(summary: string) {
     return globalRateLimiter.executeWithRateLimit(async () => {
-        const embeddingModel = genAI.getGenerativeModel({
-            model: "text-embedding-004",
-        });
         try {
+            if (!summary || summary.length === 0) {
+                console.warn("Empty summary passed to generateEmbedding.");
+                return [];
+            }
+
+            const embeddingModel = genAI.getGenerativeModel({
+                model: "text-embedding-004",
+            });
+
             const result = await embeddingModel.embedContent(summary);
-            const embedding = result.embedding;
-            return embedding.values;
+            return result.embedding.values;
         } catch (error) {
-            console.error("Error generating embedding:", error);
+            console.error("Embedding generation failed:", error);
             return [];
         }
     });
 }
-
 
 
 
