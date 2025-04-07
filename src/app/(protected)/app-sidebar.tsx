@@ -5,7 +5,6 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGrou
 import useProject from "@/hooks/use-project"
 import { cn } from "@/lib/utils"
 import { Bot, CreditCard, LayoutDashboard, Plus, Presentation } from "lucide-react"
-import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -72,7 +71,7 @@ export default function AppSidebar() {
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton asChild>
                                             <Link href={item.path} className={cn({
-                                                'bg-primary text-white': pathname === item.path,
+                                                'bg-[#e7e4f9] text-black cursor-pointer': pathname === item.path,
                                             })}>
                                                 <item.icon />
                                                 <span>
@@ -99,7 +98,12 @@ export default function AppSidebar() {
                                 return (
                                     <SidebarMenuItem key={project.name}>
                                         <SidebarMenuButton asChild>
-                                            <div onClick={() => {
+                                            <div className={cn(
+                                                    'cursor-pointer',
+                                                    {
+                                                        'bg-[#e7e4f9]': project.id === projectId,
+                                                    })}
+                                                    onClick={() => {
                                                 setProjectsId(project.id)
                                             }}>
                                                 <div className={cn(
