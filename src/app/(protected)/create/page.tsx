@@ -43,54 +43,126 @@ export default function CreateProjectForm() {
     } | null>(null)
 
 
+    // const validateAndFetchRepo = async () => {
+    //     if (!repoUrl.includes("github.com/")) return
+
+    //     setIsLoading(true)
+
+    //     try {
+    //         const octokit = new Octokit({
+    //             auth: "",
+    //         })
+
+    //         const [owner, repo] = repoUrl.replace("https://github.com/", "").split("/")
+
+    //         if (!owner || !repo) {
+    //             throw new Error("Invalid GitHub repository URL")
+    //         }
+
+    //         const { data: repoData } = await octokit.rest.repos.get({
+    //             owner,
+    //             repo,
+    //         })
+
+    //         const { data: branchesData } = await octokit.rest.repos.listBranches({
+    //             owner,
+    //             repo,
+    //         })
+
+
+    //         const sizeInMB = (repoData.size / 1024).toFixed(2) + " MB"
+    //         const sizeCategory =
+    //             repoData.size < 1000 ? "Small" : repoData.size < 5000 ? "Medium" : "Large"
+
+    //         setRepoDetails({
+    //             name: `${owner}/${repo}`,
+    //             size: sizeInMB,
+    //             sizeCategory,
+    //             branches: branchesData.map((b) => b.name),
+    //         })
+
+    //         console.log(name+"  "+sizeInMB+"  "+branchesData.map((b) => b.name)+"  "+branchesData)
+
+    //         setRequiresToken(repoData.size > 1000)
+    //         setRepoFetched(true)
+    //     } catch (error) {
+    //         console.error("Failed to fetch repo:", error)
+    //     } finally {
+    //         setIsLoading(false)
+    //     }
+    // }
+
+
     const validateAndFetchRepo = async () => {
-        if (!repoUrl.includes("github.com/")) return
-
-        setIsLoading(true)
-
+        if (!repoUrl.includes("github.com/")) return;
+    
+        setIsLoading(true);
+    
         try {
             const octokit = new Octokit({
-                auth: "",
-            })
-
-            const [owner, repo] = repoUrl.replace("https://github.com/", "").split("/")
-
+                auth: "", 
+            });
+    
+            const [owner, repo] = repoUrl.replace("https://github.com/", "").split("/");
+    
             if (!owner || !repo) {
-                throw new Error("Invalid GitHub repository URL")
+                throw new Error("Invalid GitHub repository URL");
             }
-
+    
             const { data: repoData } = await octokit.rest.repos.get({
                 owner,
                 repo,
-            })
-
+            });
+    
             const { data: branchesData } = await octokit.rest.repos.listBranches({
                 owner,
                 repo,
-            })
+            });
 
+            let hasMoreThan50Files = false;
+            try {
+                const { data: initialSearch } = await octokit.rest.search.code({
+                    q: `repo:${owner}/${repo}`,
+                    per_page: 1, 
+                });
+    
+                if (initialSearch.total_count > 50) {
+                    hasMoreThan50Files = true;
+                } 
 
-            const sizeInMB = (repoData.size / 1024).toFixed(2) + " MB"
-            const sizeCategory =
-                repoData.size < 1000 ? "Small" : repoData.size < 5000 ? "Medium" : "Large"
-
+                else if (initialSearch.total_count === 50) {
+                    const { data: secondPageCheck } = await octokit.rest.search.code({
+                        q: `repo:${owner}/${repo}`,
+                        per_page: 1,
+                        page: 2, 
+                    });
+                    hasMoreThan50Files = secondPageCheck.items.length > 0;
+                }
+            } catch (searchError) {
+                console.warn("Search API failed, falling back to size check");
+                hasMoreThan50Files = repoData.size > 1000;
+            }
+    
+            const sizeInMB = (repoData.size / 1024).toFixed(2) + " MB";
+            const sizeCategory = 
+                repoData.size < 1000 ? "Small" : repoData.size < 5000 ? "Medium" : "Large";
+    
             setRepoDetails({
                 name: `${owner}/${repo}`,
                 size: sizeInMB,
                 sizeCategory,
                 branches: branchesData.map((b) => b.name),
-            })
-
-            console.log(name+"  "+sizeInMB+"  "+branchesData.map((b) => b.name)+"  "+branchesData)
-
-            setRequiresToken(repoData.size > 1000)
-            setRepoFetched(true)
+            });
+    
+            setRequiresToken(repoData.size > 1000 || hasMoreThan50Files);
+            setRepoFetched(true);
+    
         } catch (error) {
-            console.error("Failed to fetch repo:", error)
+            console.error("Failed to fetch repo:", error);
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
-    }
+    };
 
     const handleRepoUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setRepoUrl(e.target.value)
@@ -148,8 +220,6 @@ export default function CreateProjectForm() {
                             <p className="text-xs text-zinc-500">Give your project a memorable name</p>
                             <div className="text-xs text-right text-zinc-400">{projectName.length}/50</div>
                         </div>
-
-                        {/* GitHub Repository URL */}
                         <div className="space-y-2">
                             <Label htmlFor="repo-url">GitHub Repository URL</Label>
                             <div className="relative">
@@ -174,12 +244,10 @@ export default function CreateProjectForm() {
                             <p className="text-xs text-zinc-500">Paste your public or private GitHub repo URL</p>
                         </div>
 
-                        {/* Repository Details (shown after fetching) */}
                         {repoFetched && repoDetails && (
                             <RepoDetails requiresToken={requiresToken} repoDetails={repoDetails} />
                         )}
 
-                        {/* GitHub Token Input (conditional) */}
                         {repoFetched && requiresToken && (
                             <div className="space-y-2 rounded-md border border-amber-200 bg-amber-50 p-4">
                                 <div className="flex items-start gap-3">
