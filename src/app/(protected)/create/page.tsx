@@ -257,7 +257,6 @@ export default function CreateProjectForm() {
                                 </div>
 
                                 <div className="mt-3">
-                                    <Label htmlFor="github-token">GitHub Token</Label>
                                     <Button
                                         variant="default"
                                         onClick={handleAuth}>
