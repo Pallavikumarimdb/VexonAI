@@ -19,11 +19,11 @@ const items = [
         path: "/qa",
         icon: Bot
     },
-    {
-        title: "Meetings",
-        path: "/meetings",
-        icon: Presentation
-    },
+    // {
+    //     title: "Meetings",
+    //     path: "/meetings",
+    //     icon: Presentation
+    // },
     {
         title: "Billing",
         path: "/billing",
@@ -107,12 +107,12 @@ export default function AppSidebar() {
                                                 setProjectsId(project.id)
                                             }}>
                                                 <div className={cn(
-                                                    'rounded-sm border size-6 flex item-center justify-center text-md bg-white text-primary',
+                                                    'rounded-sm size-6 flex justify-center text-md bg-white text-primary',
                                                     {
                                                         'bg-primary text-white': project.id === projectId,
                                                     }
                                                 )}>
-                                                    {project.name[0]}
+                                                    <span>{project.name[0]}</span>
                                                 </div>
                                                 {open.open && <span>{project.name}</span>}
                                             </div>

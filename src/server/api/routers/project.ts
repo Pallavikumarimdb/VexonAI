@@ -184,5 +184,68 @@ export const projectRouter = createTRPCRouter({
                 createdAt: 'desc'
             }
         })
+    }),
+    deleteProject: protectedProcedure.input(z.object({
+        projectId: z.string()
+    })).mutation(async ({ ctx, input }) => {
+        // Check if user is authorized to delete this project
+        const userProject = await ctx.prisma.userToProject.findFirst({
+            where: {
+                projectId: input.projectId,
+                userId: ctx.user.id,
+            },
+        });
+        
+        if (!userProject) {
+            throw new TRPCError({
+                code: "FORBIDDEN",
+                message: "You don't have access to this project.",
+            });
+        }
+
+        // Check if user is the project creator
+        const isCreator = await ctx.prisma.userToProject.findFirst({
+            where: {
+                projectId: input.projectId,
+            },
+            orderBy: {
+                createdAt: 'asc',
+            },
+            take: 1,
+        }).then(firstUser => firstUser?.userId === ctx.user.id);
+        
+        if (!isCreator) {
+            throw new TRPCError({
+                code: "FORBIDDEN",
+                message: "Only the project creator can delete the project.",
+            });
+        }
+
+        // Soft delete the project and all related data
+        await ctx.prisma.$transaction([
+            // Delete all questions
+            ctx.prisma.question.deleteMany({
+                where: { projectId: input.projectId }
+            }),
+            // Delete all source code embeddings
+            ctx.prisma.sourceCodeEmbedding.deleteMany({
+                where: { projectId: input.projectId }
+            }),
+            // Delete all commits
+            ctx.prisma.commit.deleteMany({
+                where: { projectId: input.projectId }
+            }),
+            // Delete all user-project relationships
+            ctx.prisma.userToProject.deleteMany({
+                where: { projectId: input.projectId }
+            }),
+            // Soft delete the project
+            ctx.prisma.project.update({
+                where: { id: input.projectId },
+                data: { deletedAt: new Date() }
+            })
+        ]);
+
+        return { success: true };
     })
 });

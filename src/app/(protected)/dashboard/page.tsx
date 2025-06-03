@@ -5,6 +5,7 @@ import Link from "next/link";
 import React from "react"
 import CommitLog from "./commit-log";
 import AskQuestionCard from "./ask-question-card";
+import DeleteProjectButton from "./delete-project-button";
 
 const DashboardPage = () => {
   const { project } = useProject();
@@ -27,8 +28,8 @@ const DashboardPage = () => {
           </div>
           </div>
         </div>
+        {project?.id && <DeleteProjectButton projectId={project.id} />}
       </div>
-
 
       <div className="my-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
