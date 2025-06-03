@@ -11,18 +11,12 @@ export async function GET(req: NextRequest) {
   const CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
   const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 
-  console.log("CLIENT_ID:", process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID);
-  console.log("CLIENT_SECRET:", process.env.GITHUB_CLIENT_SECRET ? "***set***" : "undefined");
-  console.log("Received code:", code);
-
   try {
     const params = qs.stringify({
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
       code,
     });
-
-    console.log("Request params:", { client_id: CLIENT_ID, code, client_secret: "***" });
 
     const tokenResponse = await axios.post(
       "https://github.com/login/oauth/access_token",
@@ -35,7 +29,6 @@ export async function GET(req: NextRequest) {
       }
     );
 
-    console.log("GitHub response:", tokenResponse.data);
 
     const accessToken = tokenResponse.data.access_token;
     if (!accessToken) {
@@ -43,7 +36,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Failed to get access token" }, { status: 400 });
     }
 
-    return NextResponse.redirect(`http://localhost:3000/create?token=${accessToken}`);
+    return NextResponse.redirect(`https://vexon-ai.vercel.app/create?token=${accessToken}`);
   } catch (error: any) {
     console.error("OAuth error details:", {
       message: error.message,

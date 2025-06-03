@@ -184,7 +184,7 @@ export default function CreateProjectForm() {
     const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
 
     const handleAuth = () => {
-        const redirectUri = encodeURIComponent("http://localhost:3000/api/auth/github/callback");
+        const redirectUri = encodeURIComponent("https://vexon-ai.vercel.app/api/auth/github/callback");
         const scope = encodeURIComponent("repo user"); // scopes you need
         const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
         window.location.href = githubAuthUrl;
