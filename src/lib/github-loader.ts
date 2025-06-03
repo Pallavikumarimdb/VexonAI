@@ -59,8 +59,12 @@ export class GitHubRateLimiter {
 export const globalGitHubRateLimiter = new GitHubRateLimiter();
 
 export const loadGithubRepo = async (githubUrl: string, githubToken?: string) => {
+    if (!githubToken) {
+        throw new Error("GitHub token is required");
+    }
+
     const loader = new GithubRepoLoader(githubUrl, {
-        accessToken: githubToken ?? '',
+        accessToken: githubToken,
         branch: 'main',
         ignoreFiles: getIgnoredFiles(),
         recursive: true,

@@ -10,7 +10,7 @@ export const projectRouter = createTRPCRouter({
         z.object({
             name: z.string().min(1),
             githubUrl: z.string().url(),
-            githubToken: z.string().optional(),
+            githubToken: z.string(),
         })
     ).mutation(async ({ ctx, input }) => {
         // Fetch user by session email
@@ -35,7 +35,6 @@ export const projectRouter = createTRPCRouter({
             data: {
                 name: input.name,
                 githubUrl: input.githubUrl,
-                githubToken: input.githubToken,
                 userToProject: {
                     create: {
                         userId: user.id,
@@ -43,8 +42,10 @@ export const projectRouter = createTRPCRouter({
                 }
             }
         });
+
+        // Use the token from client for indexing and polling
         await indexGithubRepo(project.id, input.githubUrl, input.githubToken);
-        await pollCommits(project.id);
+        await pollCommits(project.id, input.githubToken);
         return project;
     }),
     getProjects: protectedProcedure.query(async ({ ctx }) => {
@@ -95,7 +96,7 @@ export const projectRouter = createTRPCRouter({
             });
         }
         
-        pollCommits(input.projectId).then().catch(console.error);
+        pollCommits(input.projectId, ctx.user.id).then().catch(console.error);
         return await ctx.prisma.commit.findMany({
             where: {
                 projectId: input.projectId,

@@ -1,7 +1,9 @@
 "use client"
 
 import type React from "react"
-
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"; 
 import { useState } from "react"
 import Image from "next/image";
 import { Github, AlertCircle } from "lucide-react"
@@ -32,9 +34,10 @@ export default function CreateProjectForm() {
     const { reset } = useForm<FormInput>();
     const refetch = useRefetch();
     const [isLoading, setIsLoading] = useState(false)
+    const [isSummarizing, setIsSummarizing] = useState(false)
     const [repoFetched, setRepoFetched] = useState(false)
     const [requiresToken, setRequiresToken] = useState(false)
-    const [githubToken, setGithubToken] = useState("")
+    const [hasValidToken, setHasValidToken] = useState(false)
     const [repoDetails, setRepoDetails] = useState<{
         name: string
         size: string
@@ -42,78 +45,59 @@ export default function CreateProjectForm() {
         branches: string[]
     } | null>(null)
 
+    const router = useRouter();
 
-    // const validateAndFetchRepo = async () => {
-    //     if (!repoUrl.includes("github.com/")) return
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
 
-    //     setIsLoading(true)
-
-    //     try {
-    //         const octokit = new Octokit({
-    //             auth: "",
-    //         })
-
-    //         const [owner, repo] = repoUrl.replace("https://github.com/", "").split("/")
-
-    //         if (!owner || !repo) {
-    //             throw new Error("Invalid GitHub repository URL")
-    //         }
-
-    //         const { data: repoData } = await octokit.rest.repos.get({
-    //             owner,
-    //             repo,
-    //         })
-
-    //         const { data: branchesData } = await octokit.rest.repos.listBranches({
-    //             owner,
-    //             repo,
-    //         })
-
-
-    //         const sizeInMB = (repoData.size / 1024).toFixed(2) + " MB"
-    //         const sizeCategory =
-    //             repoData.size < 1000 ? "Small" : repoData.size < 5000 ? "Medium" : "Large"
-
-    //         setRepoDetails({
-    //             name: `${owner}/${repo}`,
-    //             size: sizeInMB,
-    //             sizeCategory,
-    //             branches: branchesData.map((b) => b.name),
-    //         })
-
-    //         console.log(name+"  "+sizeInMB+"  "+branchesData.map((b) => b.name)+"  "+branchesData)
-
-    //         setRequiresToken(repoData.size > 1000)
-    //         setRepoFetched(true)
-    //     } catch (error) {
-    //         console.error("Failed to fetch repo:", error)
-    //     } finally {
-    //         setIsLoading(false)
-    //     }
-    // }
+    if (token) {
+      console.log("GitHub access token:", token);
+      localStorage.setItem("github_token", token);
+      setHasValidToken(true);
+      setRequiresToken(false);
+      router.replace("/create");
+    } else {
+      const storedToken = localStorage.getItem("github_token");
+      if(storedToken){
+        setRequiresToken(false);
+      }
+      setHasValidToken(!!storedToken);
+    }
+  }, [router]);
 
 
     const validateAndFetchRepo = async () => {
         if (!repoUrl.includes("github.com/")) return;
-    
+
         setIsLoading(true);
-    
+
         try {
+            const storedToken = localStorage.getItem("github_token");
+            if (!storedToken) {
+                setRequiresToken(true);
+                setRepoFetched(true);
+                setIsLoading(false);
+                return;
+            }else{
+                setRequiresToken(false);
+            }
+
             const octokit = new Octokit({
-                auth: "", 
+                auth: storedToken,
             });
-    
+
             const [owner, repo] = repoUrl.replace("https://github.com/", "").split("/");
-    
+
             if (!owner || !repo) {
                 throw new Error("Invalid GitHub repository URL");
             }
-    
+
             const { data: repoData } = await octokit.rest.repos.get({
                 owner,
                 repo,
             });
-    
+
             const { data: branchesData } = await octokit.rest.repos.listBranches({
                 owner,
                 repo,
@@ -123,42 +107,43 @@ export default function CreateProjectForm() {
             try {
                 const { data: initialSearch } = await octokit.rest.search.code({
                     q: `repo:${owner}/${repo}`,
-                    per_page: 1, 
+                    per_page: 1,
                 });
-    
+
                 if (initialSearch.total_count > 50) {
                     hasMoreThan50Files = true;
-                } 
+                }
 
                 else if (initialSearch.total_count === 50) {
                     const { data: secondPageCheck } = await octokit.rest.search.code({
                         q: `repo:${owner}/${repo}`,
                         per_page: 1,
-                        page: 2, 
+                        page: 2,
                     });
                     hasMoreThan50Files = secondPageCheck.items.length > 0;
                 }
             } catch (searchError) {
-                console.warn("Search API failed, falling back to size check");
+                console.warn("Search API failed, falling back to size check", searchError);
                 hasMoreThan50Files = repoData.size > 1000;
             }
-    
+
             const sizeInMB = (repoData.size / 1024).toFixed(2) + " MB";
-            const sizeCategory = 
+            const sizeCategory =
                 repoData.size < 1000 ? "Small" : repoData.size < 5000 ? "Medium" : "Large";
-    
+
             setRepoDetails({
                 name: `${owner}/${repo}`,
                 size: sizeInMB,
                 sizeCategory,
                 branches: branchesData.map((b) => b.name),
             });
-    
+
             setRequiresToken(repoData.size > 1000 || hasMoreThan50Files);
             setRepoFetched(true);
-    
+
         } catch (error) {
             console.error("Failed to fetch repo:", error);
+            toast.error("Failed to fetch repository details");
         } finally {
             setIsLoading(false);
         }
@@ -173,26 +158,37 @@ export default function CreateProjectForm() {
         e.preventDefault()
         await validateAndFetchRepo()
 
-        if (requiresToken) {
-          if (!githubToken) {
-            toast.error("GitHub Token is required to proceed.")
-            return
-          }
+        const storedToken = localStorage.getItem("github_token");
+        if (!storedToken) {
+            toast.error("GitHub Token is required. Please authenticate with GitHub first.");
+            return;
         }
+
         try {
+            setIsSummarizing(true);
             await createProject.mutateAsync({
                 githubUrl: repoUrl,
                 name: projectName,
-                githubToken: githubToken,
+                githubToken: storedToken,
             });
             toast.success('Project Created Successfully');
-            await  refetch();
-                   reset();
+            await refetch();
+            reset();
         } catch (error) {
-            toast.error('Project Creation Failed');
+            toast.error(`Project Creation Failed: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+            setIsSummarizing(false);
         }
     }
 
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+
+    const handleAuth = () => {
+        const redirectUri = encodeURIComponent("http://localhost:3000/api/auth/github/callback");
+        const scope = encodeURIComponent("repo user"); // scopes you need
+        const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+        window.location.href = githubAuthUrl;
+    }
 
     return (
         <Card className=" w-full bg-transparent border-none shadow-none">
@@ -248,7 +244,7 @@ export default function CreateProjectForm() {
                             <RepoDetails requiresToken={requiresToken} repoDetails={repoDetails} />
                         )}
 
-                        {repoFetched && requiresToken && (
+                        {repoFetched && requiresToken && !hasValidToken && (
                             <div className="space-y-2 rounded-md border border-amber-200 bg-amber-50 p-4">
                                 <div className="flex items-start gap-3">
                                     <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
@@ -262,15 +258,11 @@ export default function CreateProjectForm() {
 
                                 <div className="mt-3">
                                     <Label htmlFor="github-token">GitHub Token</Label>
-                                    <Input
-                                        id="github-token"
-                                        type="password"
-                                        placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                                        value={githubToken}
-                                        onChange={(e) => setGithubToken(e.target.value)}
-                                        className="mt-1"
-                                        required={requiresToken}
-                                    />
+                                    <Button
+                                        variant="default"
+                                        onClick={handleAuth}>
+                                        Authenticate with GitHub
+                                    </Button>
                                 </div>
 
                                 <Button
@@ -286,14 +278,20 @@ export default function CreateProjectForm() {
                     </CardContent>
 
                     <CardFooter className="flex flex-col pt-4 items-start space-y-4 sm:flex-row sm:justify-between sm:space-y-0">
-                        <div className="text-sm text-zinc-500">Estimated load time: ~2 minutes based on repo size</div>
+                        <div className="text-sm text-zinc-500">
+                            {isSummarizing ? "Summarizing code and creating embeddings..." : "Estimated load time: ~2 minutes based on repo size"}
+                        </div>
 
                         <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
                             <Button variant="link" type="button">
                                 What happens next?
                             </Button>
-                            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700" disabled={isLoading || !repoUrl}>
-                            {isLoading ? "Fetching Repo..." : "Create Project"}
+                            <Button 
+                                type="submit" 
+                                className="bg-emerald-600 hover:bg-emerald-700" 
+                                disabled={isLoading || !repoUrl || isSummarizing}
+                            >
+                                {isLoading ? "Fetching Repo..." : isSummarizing ? "Summarizing..." : "Create Project"}
                             </Button>
                         </div>
                     </CardFooter>
@@ -302,7 +300,6 @@ export default function CreateProjectForm() {
         </Card>
     )
 }
-
 
 
 

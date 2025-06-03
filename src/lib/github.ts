@@ -6,44 +6,37 @@ import PQueue from 'p-queue';
 
 const githubQueue = new PQueue({ concurrency: 5, interval: 1000 });
 
-export const octokit = new Octokit({
-    auth: process.env.GITHUB_TOKEN,
-});
-interface CommitData {
-    commit: {
-        author: {
-            date?: string;
-        } | null;
-    };
-}
-
-type CommitResponse = {
+interface CommitResponse {
     commitHash: string;
     commitMessage: string;
     commitAuthorName: string;
     commitAuthorAvatar: string;
     commitDate: string;
-};
+}
 
-export const getCommitHashes = async (githubUrl: string): Promise<CommitResponse[]> => {
+export const getCommitHashes = async (githubUrl: string, githubToken: string): Promise<CommitResponse[]> => {
     try {
+        const octokit = new Octokit({
+            auth: githubToken,
+        });
+
         const [owner, repo] = githubUrl.split("/").slice(-2);
         if (!owner || !repo) {
             throw new Error("Invalid github url");
         }
         const { data } = await githubQueue.add(() => octokit.rest.repos.listCommits({ owner, repo }));
-        const sortedCommits = data.sort((a: CommitData, b: CommitData) => {
+        const sortedCommits = data.sort((a, b) => {
             const dateA = a.commit.author?.date ? new Date(a.commit.author.date).getTime() : 0;
             const dateB = b.commit.author?.date ? new Date(b.commit.author.date).getTime() : 0;
             return dateB - dateA;
         });
         
-        return sortedCommits.slice(0, 10).map((commit: any) => ({
-            commitHash: commit.sha as string,
-            commitMessage: commit.commit.message ?? "",
-            commitAuthorName: commit.commit?.author?.name ?? "",
-            commitAuthorAvatar: commit?.author?.avatar_url ?? "",
-            commitDate: commit.commit?.author?.date ?? "",
+        return sortedCommits.slice(0, 10).map((commit) => ({
+            commitHash: commit.sha,
+            commitMessage: commit.commit.message,
+            commitAuthorName: commit.commit.author?.name ?? "",
+            commitAuthorAvatar: commit.author?.avatar_url ?? "",
+            commitDate: commit.commit.author?.date ?? "",
         }));
     } catch (error) {
         console.error("Error fetching commit hashes:", error);
@@ -51,18 +44,17 @@ export const getCommitHashes = async (githubUrl: string): Promise<CommitResponse
     }
 };
 
-export const pollCommits = async (projectId: string) => {
+export const pollCommits = async (projectId: string, githubToken: string) => {
     try {
         const { project, githubUrl } = await fetchProjectGithubUrl(projectId);
-        const commitHashes = await getCommitHashes(githubUrl);
+        const commitHashes = await getCommitHashes(githubUrl, githubToken);
         const unprocessedCommits = await filterUnprocessedCommits(projectId, commitHashes);
         const summaryResponses = await Promise.allSettled(unprocessedCommits.map(commit => {
-            return summarizeCommit(githubUrl, commit.commitHash);
+            return summarizeCommit(githubUrl, commit.commitHash, githubToken);
         }));
         console.log("summaryResponses", summaryResponses);
         const summaries = summaryResponses.map((response) => {
             if (response.status === "fulfilled") {
-                // console.log("summaries", response.value);
                 return response.value as string;
             }
             return "";
@@ -87,11 +79,12 @@ export const pollCommits = async (projectId: string) => {
     }
 };
 
-async function summarizeCommit(githubUrl: string, commitHash: string) {
+async function summarizeCommit(githubUrl: string, commitHash: string, githubToken: string) {
     try {
         const { data } = await axios.get(`${githubUrl}/commit/${commitHash}.diff`, {
             headers: {
                 Accept: "application/vnd.github.v3.diff",
+                Authorization: `Bearer ${githubToken}`,
             }
         });
         return await aiSummerizeCommit(data) || "";
@@ -120,7 +113,7 @@ async function fetchProjectGithubUrl(projectId: string) {
         };
     } catch (error) {
         console.error("Error fetching project GitHub URL:", error);
-        throw error; // Re-throw to propagate the error
+        throw error;
     }
 }
 
