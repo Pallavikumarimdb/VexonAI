@@ -88,32 +88,32 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden pt-4 pb-2 animate-fade-in">
-            <div className="flex flex-col space-y-4">
+          <div className="md:hidden pt-4 px-4 pb-2 animate-fade-in bg-black rounded-md">
+            <div className="flex flex-col space-y-4 text-white">
               <Link 
                 href="/" 
-                className="text-foreground/80 hover:text-foreground transition-colors"
+                className="text-white hover:text-foreground transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
               </Link>
               <Link 
                 href="/features" 
-                className="text-foreground/80 hover:text-foreground transition-colors"
+                className="text-white hover:text-foreground transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Features
               </Link>
               <Link 
                 href="/pricing" 
-                className="text-foreground/80 hover:text-foreground transition-colors"
+                className="text-white hover:text-foreground transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Pricing
               </Link>
               <Link 
                 href="/docs" 
-                className="text-foreground/80 hover:text-foreground transition-colors"
+                className="text-white hover:text-foreground transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Docs

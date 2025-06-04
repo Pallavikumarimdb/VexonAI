@@ -92,7 +92,7 @@ const HowItWorks = () => {
   const [activeStep, setActiveStep] = useState(1);
 
   return (
-    <section className="py-20 md:py-32 bg-vexon-dark-purple/5 mt-10 mx-16 rounded-xl relative overflow-hidden">
+    <section className="py-20 md:py-32 bg-vexon-dark-purple/5 mt-10 lg:mx-16 rounded-xl relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-7xl h-64 bg-gradient-to-r from-vexon-purple/10 via-vexon-light-purple/20 to-vexon-purple/10 rounded-full blur-3xl"></div>
       <div className="absolute top-0 right-0 w-72 h-72 bg-vexon-purple/10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-vexon-light-purple/10 rounded-full blur-3xl"></div>

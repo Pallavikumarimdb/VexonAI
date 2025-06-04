@@ -43,7 +43,7 @@ const Hero = () => {
     }, [currentQuestionIndex]);
 
     return (
-        <section className="py-20 md:py-28 overflow-hidden relative px-16">
+        <section className="py-20 md:py-28 overflow-hidden relative lg:px-16">
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
                 <div className="absolute top-20 left-1/4 w-72 h-72 bg-vexon-purple/20 rounded-full blur-[100px]"></div>
                 <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-vexon-light-purple/20 rounded-full blur-[120px]"></div>

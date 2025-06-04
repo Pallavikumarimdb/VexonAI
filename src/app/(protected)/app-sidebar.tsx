@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 import useProject from "@/hooks/use-project"
 import { cn } from "@/lib/utils"
-import { Bot, CreditCard, LayoutDashboard, Plus, Presentation } from "lucide-react"
+import { Bot, CreditCard, LayoutDashboard, Plus } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -40,7 +40,7 @@ export default function AppSidebar() {
     console.log(open)
     return (
         <Sidebar collapsible="icon" variant="floating" className="">
-            <SidebarHeader className="rounded-lg shadow-lg border border-white/20 backdrop-blur-xl">
+            <SidebarHeader className="rounded-lg shadow-lg border border-white/20 lg:bg-vexon-purple/40 bg-vexon-purple">
                 <div className="flex items-center gap-2">
                    {!open.open && (
                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-vexon-light-purple to-vexon-purple flex items-center justify-center">
@@ -58,7 +58,7 @@ export default function AppSidebar() {
                 </div>
             </SidebarHeader>
 
-            <SidebarContent className="rounded-lg shadow-lg">
+            <SidebarContent className="rounded-lg shadow-lg lg:!bg-transparent !bg-vexon-purple">
                 <SidebarGroup>
                     <SidebarGroupLabel>
                         Application

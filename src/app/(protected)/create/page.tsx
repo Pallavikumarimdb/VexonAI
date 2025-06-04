@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation"
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { useState } from "react"
 import Image from "next/image";
 import { Github, AlertCircle } from "lucide-react"
@@ -47,24 +47,24 @@ export default function CreateProjectForm() {
 
     const router = useRouter();
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get("token");
 
-    if (token) {
-      console.log("GitHub access token:", token);
-      localStorage.setItem("github_token", token);
-      setHasValidToken(true);
-      setRequiresToken(false);
-      router.replace("/create");
-    } else {
-      const storedToken = localStorage.getItem("github_token");
-      if(storedToken){
-        setRequiresToken(false);
-      }
-      setHasValidToken(!!storedToken);
-    }
-  }, [router]);
+        if (token) {
+            console.log("GitHub access token:", token);
+            localStorage.setItem("github_token", token);
+            setHasValidToken(true);
+            setRequiresToken(false);
+            router.replace("/create");
+        } else {
+            const storedToken = localStorage.getItem("github_token");
+            if (storedToken) {
+                setRequiresToken(false);
+            }
+            setHasValidToken(!!storedToken);
+        }
+    }, [router]);
 
 
     const validateAndFetchRepo = async () => {
@@ -79,7 +79,7 @@ export default function CreateProjectForm() {
                 setRepoFetched(true);
                 setIsLoading(false);
                 return;
-            }else{
+            } else {
                 setRequiresToken(false);
             }
 
@@ -191,18 +191,31 @@ export default function CreateProjectForm() {
     }
 
     return (
-        <Card className=" w-full bg-transparent border-none shadow-none">
+        <Card className="w-full bg-transparent border-none shadow-none">
             <CardHeader>
                 <CardTitle className="text-2xl font-bold">Create New Project</CardTitle>
-                <CardDescription>Set up a new project for AI code summarization and embedding</CardDescription>
+                <CardDescription>
+                    Set up a new project for AI code summarization and embedding
+                </CardDescription>
             </CardHeader>
 
-            <div className="flex items-center gap-12 px-[6%] pt-10 h-full justify-cente">
-                <Image src="/img.jpeg" alt="logo" width={300} height={30} priority className="rounded-xl" />
-
-                <form onSubmit={handleSubmit} className="bg-white w-full rounded-xl shadow-lg py-8 px-4">
+            <div className="flex flex-col md:flex-row items-center gap-8 px-[6%] pt-10">
+            
+                <div className="w-full md:w-1/2 flex justify-center mb-6 md:mb-0">
+                    <Image
+                        src="/img.jpeg"
+                        alt="logo"
+                        width={300}
+                        height={30}
+                        priority
+                        className="rounded-xl w-full max-w-[300px] h-auto object-contain"
+                    />
+                </div>
+                <form
+                    onSubmit={handleSubmit}
+                    className="bg-white w-full md:w-1/2 rounded-xl shadow-lg py-8 px-4"
+                >
                     <CardContent className="space-y-6">
-                        {/* Project Name Input */}
                         <div className="space-y-2">
                             <Label htmlFor="project-name">Project Name</Label>
                             <Input
@@ -278,19 +291,25 @@ export default function CreateProjectForm() {
 
                     <CardFooter className="flex flex-col pt-4 items-start space-y-4 sm:flex-row sm:justify-between sm:space-y-0">
                         <div className="text-sm text-zinc-500">
-                            {isSummarizing ? "Summarizing code and creating embeddings..." : "Estimated load time: ~2 minutes based on repo size"}
+                            {isSummarizing
+                                ? "Summarizing code and creating embeddings..."
+                                : "Estimated load time: ~2 minutes based on repo size"}
                         </div>
 
                         <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
                             <Button variant="link" type="button">
                                 What happens next?
                             </Button>
-                            <Button 
-                                type="submit" 
-                                className="bg-emerald-600 hover:bg-emerald-700" 
+                            <Button
+                                type="submit"
+                                className="bg-emerald-600 hover:bg-emerald-700"
                                 disabled={isLoading || !repoUrl || isSummarizing}
                             >
-                                {isLoading ? "Fetching Repo..." : isSummarizing ? "Summarizing..." : "Create Project"}
+                                {isLoading
+                                    ? "Fetching Repo..."
+                                    : isSummarizing
+                                        ? "Summarizing..."
+                                        : "Create Project"}
                             </Button>
                         </div>
                     </CardFooter>
